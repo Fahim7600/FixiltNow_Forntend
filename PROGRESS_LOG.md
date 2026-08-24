@@ -1,30 +1,35 @@
 # Progress Log - FixItNow Frontend
 
-## Project Commit Counter: 27 commits total
+## Project Commit Counter: 36 commits total
+
+---
+
+## [2026-08-24] - Prompt 5: Booking Creation, Status Badges & Role Dashboards
+
+### Completed Tasks
+- **Task 1: Booking Proxy Route Handlers**: Created proxy Route Handlers under `src/app/api/bookings/`:
+  - `POST /api/bookings`: Forwards serviceId, scheduledDate, and notes to backend `POST /api/bookings` (auth: CUSTOMER only).
+  - `GET /api/bookings`: Forwards caller's booking list query to backend `GET /api/bookings`.
+  - `GET /api/bookings/[id]`: Forwards single booking detail query to backend `GET /api/bookings/:id`.
+  - `PATCH /api/technician-bookings/[id]`: Forwards status updates to backend `PATCH /api/technician/bookings/:id` (auth: TECHNICIAN only).
+  *(Commit: `feat: add booking proxy Route Handlers`)*
+- **Task 2: Types & React Query Hooks**: Created `src/types/booking.ts` and `src/hooks/useBookings.ts` containing `useMyBookings()`, `useBooking(id)`, `useCreateBooking()`, and `useUpdateBookingStatus()` with automatic query cache invalidation. *(Commit: `feat: add booking types and React Query hooks`)*
+- **Task 3: Status Badge Component**: Created `src/components/booking/StatusBadge.tsx` mapping `REQUESTED`, `ACCEPTED`, `DECLINED`, `PAID`, `IN_PROGRESS`, `COMPLETED`, and `CANCELLED` statuses to design system token colors. *(Commit: `feat: add booking StatusBadge component`)*
+- **Task 4: Booking Creation Modal**: Created `src/components/booking/BookingModal.tsx` with native future datetime validation (`<input type="datetime-local">`) and notes textarea. Wired into `src/app/(public)/technicians/[id]/page.tsx` for CUSTOMER role bookings. *(Commit: `feat: add booking creation modal with future-date validation`)*
+- **Task 5: Customer Bookings Dashboard**: Replaced placeholder in `src/app/dashboard/customer/page.tsx` with interactive bookings table, `StatusBadge`, formatted pricing, and "Pay Now" action linking to stub payment page. *(Commit: `feat: build customer bookings dashboard`)*
+- **Task 6: Technician Bookings Dashboard**: Replaced placeholder in `src/app/dashboard/technician/page.tsx` with incoming jobs table and status transition actions (`Accept`, `Decline`, `Start Job`, `Mark Completed`). Surfaces backend HTTP 400 error messages directly via toasts. *(Commit: `feat: build technician bookings dashboard with status actions`)*
+- **Task 7: Dashboard Overview Stats**: Added client-side computed overview stat cards:
+  - Customer: Total Bookings, Upcoming Jobs, Completed Jobs.
+  - Technician: Total Bookings, Pending Requests, Total Earnings.
+  *(Commit: `feat: add dashboard overview stat cards`)*
+- **Task 8: Stub Payment Page**: Created `src/app/dashboard/customer/bookings/[id]/pay/page.tsx` displaying booking summary and a disabled "Payment integration coming soon" button placeholder. *(Commit: `chore: add stub payment page placeholder`)*
 
 ---
 
 ## [2026-08-24] - Prompt 4: Public Catalog Pages, Filters & Technician Profiles
 
 ### Completed Tasks
-- **Task 1: Catalog Proxy Route Handlers**: Created read-only proxy Route Handlers:
-  - `GET /api/services`: Forwards search, category, price, location, sort, and pagination params to backend `/api/services`.
-  - `GET /api/technicians`: Forwards search, location, minRating, skills, and pagination params to backend `/api/technicians`.
-  - `GET /api/technicians/[id]`: Forwards to backend `/api/technicians/:id` (returns 404 if not found).
-  - `GET /api/categories`: Forwards to backend `/api/categories`.
-  *(Commit: `feat: add public catalog proxy Route Handlers`)*
-- **Task 2: Format Helpers**: Built `src/lib/format.ts` with `formatCurrency()` (USD `$45.00`) and `formatRating()` (`4.8`), handling Prisma Decimal JSON string conversions safely. *(Commit: `feat: add currency and rating format helpers`)*
-- **Task 3: React Query Catalog Hooks**: Created `src/types/catalog.ts` and `src/hooks/useCatalog.ts` with `useServices()`, `useTechnicians()`, `useTechnician()`, and `useCategories()`. *(Commit: `feat: add React Query hooks for catalog data`)*
-- **Task 4: Catalog UI Components**: Created reusable catalog components under `src/components/catalog/`:
-  - `ServiceCard.tsx`: Service title, category badge, technician name + rating, price, and CTA link.
-  - `TechnicianCard.tsx`: Technician name, avatar, rating + reviews, skill pills, hourly rate, location.
-  - `FilterSidebar.tsx`: Search input, category dropdown, price min/max, location, and sort selector, synced with URL search params.
-  - `SkeletonCard.tsx`: Loading skeletons for services and technicians.
-  - `Pagination.tsx`: Reusable pagination controls.
-  *(Commit: `feat: add catalog UI components (cards, filters, pagination, skeletons)`)*
-- **Task 5: Home Page**: Built `src/app/page.tsx` with Hero section, "Featured Services" grid, and "Top Rated Technicians" grid. *(Commit: `feat: build home page with featured services and top technicians`)*
-- **Task 6: Services Page**: Built `src/app/(public)/services/page.tsx` and `loading.tsx` combining FilterSidebar, ServiceCard grid, pagination, URL param syncing, empty state, and retryable error state. *(Commit: `feat: build /services browse and filter page`)*
-- **Task 7: Technician Profile Page**: Built `src/app/(public)/technicians/[id]/page.tsx` and `loading.tsx` featuring profile header, active services list with "Book Now" CTAs (auth redirect aware), customer reviews, and Next.js `notFound()` 404 handling. *(Commit: `feat: build technician profile page with services and reviews`)*
+- **Tasks 1-9**: Created proxy Route Handlers (`services`, `technicians`, `categories`), `formatCurrency()` / `formatRating()` helpers, `useCatalog` React Query hooks, shared catalog UI components (`ServiceCard`, `TechnicianCard`, `FilterSidebar`, `SkeletonCard`, `Pagination`), updated Home page, `/services` page, and `/technicians/[id]` profile pages.
 
 ---
 
