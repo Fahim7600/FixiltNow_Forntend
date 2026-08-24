@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     });
 
     let user = regResult?.data || regResult?.user;
+    let autoLoggedIn = false;
 
     // 2. Auto-login after registration to retrieve JWT token and set session cookie
     try {
@@ -26,18 +27,20 @@ export async function POST(request: Request) {
 
       if (token) {
         await setSessionCookie(token);
+        autoLoggedIn = true;
       }
       if (loggedInUser) {
         user = loggedInUser;
       }
     } catch {
-      // Proceed with register user object if auto-login fails
+      // Auto-login optional fallback
     }
 
     return NextResponse.json({
       success: true,
       message: 'Registration successful',
       user,
+      autoLoggedIn,
     });
   } catch (error: any) {
     if (error instanceof BackendError) {
