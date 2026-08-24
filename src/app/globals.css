@@ -1,26 +1,67 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-charcoal-950: #12100e;
+  --color-charcoal-900: #181512;
+  --color-charcoal-800: #221e1a;
+  --color-charcoal-700: #2d2722;
+  --color-charcoal-600: #423b34;
+
+  --color-copper-dark: #b45309;
+  --color-amber-mid: #f59e0b;
+  --color-spark-bright: #fbbf24;
+
+  --color-teal-dark: #0f766e;
+  --color-teal-mid: #14b8a6;
+  --color-teal-bright: #5eead4;
+
+  --color-danger-dark: #991b1b;
+  --color-danger-mid: #dc2626;
+  --color-danger-bright: #f87171;
+
+  --font-heading: var(--font-space-grotesk), sans-serif;
+  --font-sans: var(--font-inter), sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #12100e;
+  color: #f5f2eb;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  min-height: 100vh;
+  position: relative;
+  background-image: 
+    linear-gradient(135deg, rgba(245, 158, 11, 0.025) 0%, transparent 40%),
+    linear-gradient(225deg, rgba(20, 184, 166, 0.025) 0%, transparent 40%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.008) 0px,
+      rgba(255, 255, 255, 0.008) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+  background-attachment: fixed;
+}
+
+/* Custom Sparkle Animation Keyframes for NeonButton */
+@keyframes spark-float {
+  0% {
+    transform: translate(0, 0) scale(0.5) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--spark-x, 10px), var(--spark-y, -14px)) scale(1.1) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.animate-spark {
+  animation: spark-float 0.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
