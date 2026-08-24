@@ -1,19 +1,12 @@
 // Shared TypeScript types matching backend response shapes
 
+export * from './auth';
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
   data?: T;
   errorDetails?: unknown;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'CUSTOMER' | 'TECHNICIAN' | 'ADMIN';
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface Service {
