@@ -122,6 +122,18 @@ export async function backendPatch<T = unknown>(path: string, body?: unknown, op
   });
 }
 
+export async function backendPut<T = unknown>(path: string, body?: unknown, options?: RequestInit): Promise<T> {
+  return backendFetch<T>(path, {
+    ...options,
+    method: 'PUT',
+    body: body !== undefined ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options?.headers || {}),
+    },
+  });
+}
+
 export async function backendDelete<T = unknown>(path: string, options?: RequestInit): Promise<T> {
   return backendFetch<T>(path, { ...options, method: 'DELETE' });
 }
