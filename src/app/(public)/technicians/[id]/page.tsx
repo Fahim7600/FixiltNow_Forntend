@@ -4,7 +4,6 @@ import React, { use, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
-  Star,
   MapPin,
   Award,
   Wrench,
@@ -15,6 +14,7 @@ import {
 } from 'lucide-react';
 import NeonButton from '@/components/ui/NeonButton';
 import BookingModal from '@/components/booking/BookingModal';
+import StarRating from '@/components/review/StarRating';
 import { useTechnician } from '@/hooks/useCatalog';
 import { useAuth } from '@/lib/auth-context';
 import { formatCurrency, formatRating } from '@/lib/format';
@@ -44,7 +44,8 @@ export default function TechnicianProfilePage({
   }
 
   const name = tech.user?.name || 'Pro Technician';
-  const rating = formatRating(tech.avgRating);
+  const ratingNum = typeof tech.avgRating === 'number' ? tech.avgRating : Number(tech.avgRating || 0);
+  const ratingText = formatRating(tech.avgRating);
   const reviewsCount = tech.totalReviews || 0;
   const skills = Array.isArray(tech.skills) ? tech.skills : [];
   const services = Array.isArray(tech.services) ? tech.services.filter((s) => s.isActive) : [];
@@ -91,9 +92,9 @@ export default function TechnicianProfilePage({
               </div>
 
               <div className="flex flex-wrap items-center gap-4 text-xs text-[#a8a095]">
-                <div className="flex items-center gap-1 text-[#fbbf24] font-bold">
-                  <Star className="w-4 h-4 fill-[#fbbf24]" />
-                  <span>{rating}</span>
+                <div className="flex items-center gap-1.5 font-bold">
+                  <StarRating value={ratingNum} size={16} />
+                  <span className="text-[#fbbf24] font-heading">{ratingText}</span>
                   <span className="text-[#a8a095] font-normal">({reviewsCount} reviews)</span>
                 </div>
 
@@ -227,6 +228,8 @@ export default function TechnicianProfilePage({
             <div className="space-y-4">
               {reviews.map((rev) => {
                 const reviewerName = rev.customerName || rev.customer?.name || 'Verified Customer';
+                const revRating = typeof rev.rating === 'number' ? rev.rating : Number(rev.rating || 0);
+
                 return (
                   <div
                     key={rev.id}
@@ -234,10 +237,7 @@ export default function TechnicianProfilePage({
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-[#f5f2eb]">{reviewerName}</span>
-                      <div className="flex items-center gap-1 text-[#fbbf24] text-xs font-bold">
-                        <Star className="w-3 h-3 fill-[#fbbf24]" />
-                        <span>{formatRating(rev.rating)}</span>
-                      </div>
+                      <StarRating value={revRating} size={14} />
                     </div>
 
                     <p className="text-xs text-[#a8a095] leading-relaxed italic">
