@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Calendar,
@@ -11,14 +11,20 @@ import {
   Wrench,
   CreditCard,
   UserCheck,
+  Star,
 } from 'lucide-react';
 import StatusBadge from '@/components/booking/StatusBadge';
+import ReviewModal from '@/components/review/ReviewModal';
 import NeonButton from '@/components/ui/NeonButton';
 import { useMyBookings } from '@/hooks/useBookings';
 import { formatCurrency } from '@/lib/format';
+import { Booking } from '@/types/booking';
 
 export default function CustomerDashboardPage() {
   const { data: bookings = [], isLoading, error, refetch } = useMyBookings();
+
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>([]);
 
   // Compute stat cards client-side
   const totalBookings = bookings.length;
@@ -31,6 +37,10 @@ export default function CustomerDashboardPage() {
   }).length;
 
   const completedBookings = bookings.filter((b) => b.status === 'COMPLETED').length;
+
+  const handleReviewSuccess = (bookingId: string) => {
+    setReviewedBookingIds((prev) => (prev.includes(bookingId) ? prev : [...prev, bookingId]));
+  };
 
   return (
     <div className="space-y-8">
@@ -160,6 +170,8 @@ export default function CustomerDashboardPage() {
                       timeStyle: 'short',
                     });
 
+                    const isReviewed = reviewedBookingIds.includes(booking.id);
+
                     return (
                       <tr key={booking.id} className="hover:bg-[#221e1a]/50 transition-colors">
                         <td className="py-4 px-4 font-semibold text-white font-heading">
@@ -181,13 +193,32 @@ export default function CustomerDashboardPage() {
                           {formatCurrency(booking.priceAtBooking)}
                         </td>
                         <td className="py-4 px-4 text-right whitespace-nowrap">
-                          {booking.status === 'ACCEPTED' ? (
+                          {booking.status === 'ACCEPTED' && (
                             <Link href={`/dashboard/customer/bookings/${booking.id}/pay`}>
                               <NeonButton variant="primary" size="sm" icon={<CreditCard className="w-3 h-3" />}>
                                 Pay Now
                               </NeonButton>
                             </Link>
-                          ) : (
+                          )}
+
+                          {booking.status === 'COMPLETED' && !isReviewed && (
+                            <NeonButton
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => setSelectedBookingForReview(booking)}
+                              icon={<Star className="w-3 h-3 text-[#fbbf24]" />}
+                            >
+                              Leave Review
+                            </NeonButton>
+                          )}
+
+                          {booking.status === 'COMPLETED' && isReviewed && (
+                            <span className="text-[11px] text-[#5eead4] italic font-medium">
+                              Review submitted
+                            </span>
+                          )}
+
+                          {!['ACCEPTED', 'COMPLETED'].includes(booking.status) && (
                             <span className="text-[11px] text-[#6b6359] italic">—</span>
                           )}
                         </td>
@@ -200,6 +231,16 @@ export default function CustomerDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {selectedBookingForReview && (
+        <ReviewModal
+          booking={selectedBookingForReview}
+          isOpen={!!selectedBookingForReview}
+          onClose={() => setSelectedBookingForReview(null)}
+          onSuccess={handleReviewSuccess}
+        />
+      )}
     </div>
   );
 }
