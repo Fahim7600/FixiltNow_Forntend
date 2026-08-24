@@ -2,30 +2,30 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X, User as UserIcon, Wrench, Shield, LogIn } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X, User as UserIcon, Wrench, Shield, LogIn, LogOut, Loader2 } from 'lucide-react';
 import Logo from './Logo';
 import NeonButton from '../ui/NeonButton';
+import { useAuth } from '@/lib/auth-context';
 
-export interface NavbarProps {
-  isLoggedIn?: boolean;
-  role?: 'customer' | 'technician' | 'admin';
-  userEmail?: string;
-}
-
-export default function Navbar({
-  isLoggedIn = false,
-  role = 'customer',
-  userEmail = 'user@fixitnow.com',
-}: NavbarProps) {
+export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    setMobileMenuOpen(false);
+    router.push('/');
+  };
 
   const getDashboardPath = () => {
-    switch (role) {
-      case 'technician':
+    if (!user) return '/dashboard/customer';
+    switch (user.role) {
+      case 'TECHNICIAN':
         return '/dashboard/technician';
-      case 'admin':
+      case 'ADMIN':
         return '/dashboard/admin';
       default:
         return '/dashboard/customer';
@@ -33,10 +33,11 @@ export default function Navbar({
   };
 
   const getDashboardLabel = () => {
-    switch (role) {
-      case 'technician':
+    if (!user) return 'Dashboard';
+    switch (user.role) {
+      case 'TECHNICIAN':
         return 'Tech Portal';
-      case 'admin':
+      case 'ADMIN':
         return 'Admin Panel';
       default:
         return 'My Dashboard';
@@ -46,7 +47,7 @@ export default function Navbar({
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/services', label: 'Services' },
-    ...(isLoggedIn ? [{ href: getDashboardPath(), label: getDashboardLabel() }] : []),
+    ...(isAuthenticated ? [{ href: getDashboardPath(), label: getDashboardLabel() }] : []),
   ];
 
   return (
@@ -77,31 +78,49 @@ export default function Navbar({
           })}
         </nav>
 
-        {/* Right: Actions / Auth State */}
+        {/* Right: Actions / Real Auth State */}
         <div className="hidden md:flex items-center gap-3">
-          {isLoggedIn ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center w-24 h-9">
+              <Loader2 className="w-4 h-4 animate-spin text-[#f59e0b]" />
+            </div>
+          ) : isAuthenticated && user ? (
             <div className="flex items-center gap-3 pl-2 border-l border-[#2d2722]">
               {/* Role Badge */}
               <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-[#221e1a] text-[#f59e0b] border border-[#f59e0b]/30">
-                {role === 'admin' ? (
+                {user.role === 'ADMIN' ? (
                   <Shield className="w-3 h-3 text-[#f87171]" />
-                ) : role === 'technician' ? (
+                ) : user.role === 'TECHNICIAN' ? (
                   <Wrench className="w-3 h-3 text-[#5eead4]" />
                 ) : (
                   <UserIcon className="w-3 h-3 text-[#fbbf24]" />
                 )}
-                <span className="capitalize">{role}</span>
+                <span className="capitalize">{user.role.toLowerCase()}</span>
               </span>
 
-              {/* User Avatar Placeholder */}
+              {/* User Avatar & Name */}
               <Link
                 href={getDashboardPath()}
                 className="group flex items-center gap-2 p-1.5 rounded-xl hover:bg-[#221e1a] transition-all duration-200"
               >
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#b45309] to-[#f59e0b] flex items-center justify-center text-white font-bold text-sm shadow-[0_0_10px_rgba(245,158,11,0.3)] group-hover:shadow-[0_0_15px_rgba(251,191,36,0.5)] transition-all">
-                  {userEmail.charAt(0).toUpperCase()}
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#b45309] to-[#f59e0b] flex items-center justify-center text-white font-bold text-xs shadow-[0_0_10px_rgba(245,158,11,0.3)] group-hover:shadow-[0_0_15px_rgba(251,191,36,0.5)] transition-all">
+                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
+                <span className="text-sm font-medium text-[#f5f2eb] max-w-[120px] truncate">
+                  {user.name}
+                </span>
               </Link>
+
+              {/* Logout Button */}
+              <NeonButton
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                icon={<LogOut className="w-3.5 h-3.5" />}
+                title="Logout"
+              >
+                Logout
+              </NeonButton>
             </div>
           ) : (
             <div className="flex items-center gap-2">
@@ -154,17 +173,27 @@ export default function Navbar({
           </nav>
 
           <div className="pt-3 border-t border-[#2d2722] flex flex-col gap-2">
-            {isLoggedIn ? (
-              <div className="flex items-center justify-between px-2 py-1">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#b45309] to-[#f59e0b] flex items-center justify-center text-white font-bold text-xs">
-                    {userEmail.charAt(0).toUpperCase()}
+            {isAuthenticated && user ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between px-2 py-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#b45309] to-[#f59e0b] flex items-center justify-center text-white font-bold text-xs">
+                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-white truncate max-w-[160px]">{user.name}</span>
+                      <span className="text-xs text-[#a8a095] truncate max-w-[160px]">{user.email}</span>
+                    </div>
                   </div>
-                  <span className="text-sm text-[#d4ceb8] truncate max-w-[160px]">{userEmail}</span>
+                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-[#221e1a] text-[#f59e0b] capitalize border border-[#f59e0b]/30">
+                    {user.role.toLowerCase()}
+                  </span>
                 </div>
-                <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-[#221e1a] text-[#f59e0b] capitalize border border-[#f59e0b]/30">
-                  {role}
-                </span>
+
+                <NeonButton variant="ghost" size="sm" onClick={handleLogout} className="w-full justify-center text-red-400 hover:text-red-300">
+                  <LogOut className="w-3.5 h-3.5 mr-1" />
+                  Logout
+                </NeonButton>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2 pt-1">
