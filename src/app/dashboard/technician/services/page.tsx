@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import NeonButton from '@/components/ui/NeonButton';
 import { useCategories } from '@/hooks/useCatalog';
+import { useMyProfile } from '@/hooks/useTechnicianProfile';
 import {
   useMyServices,
   useCreateService,
@@ -28,6 +29,7 @@ import { formatCurrency } from '@/lib/format';
 import { Service } from '@/types/technician';
 
 export default function TechnicianServicesPage() {
+  const { data: profile, isLoading: loadingProfile } = useMyProfile();
   const { data: services = [], isLoading, error, refetch } = useMyServices();
   const { data: categories = [] } = useCategories();
 
@@ -161,6 +163,23 @@ export default function TechnicianServicesPage() {
           Add New Service
         </NeonButton>
       </div>
+
+      {/* Step 1 Profile Missing Banner */}
+      {!loadingProfile && !profile && (
+        <div className="bg-[#0f1716] border border-[#14b8a6]/40 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-[#5eead4]">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-[#f59e0b] shrink-0" />
+            <span>
+              <strong>Step 1 Required: Complete Profile Settings</strong> — Please set your hourly rate and location first under Profile Settings before listing services.
+            </span>
+          </div>
+          <Link href="/dashboard/technician/profile" className="shrink-0">
+            <NeonButton variant="secondary" size="sm">
+              Setup Profile First
+            </NeonButton>
+          </Link>
+        </div>
+      )}
 
       {/* Services List Table */}
       {isLoading ? (

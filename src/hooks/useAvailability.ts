@@ -7,6 +7,9 @@ export function useMyAvailability() {
     queryFn: async (): Promise<AvailabilityWindow[]> => {
       const res = await fetch('/api/technician/availability', { cache: 'no-store' });
       const json = await res.json();
+      if (res.status === 404 || (json.message && json.message.toLowerCase().includes('profile'))) {
+        return [];
+      }
       if (!res.ok || !json.success) {
         throw new Error(json.message || 'Failed to fetch availability schedule');
       }

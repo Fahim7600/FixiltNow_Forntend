@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import {
   CalendarDays,
@@ -11,6 +12,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import NeonButton from '@/components/ui/NeonButton';
+import { useMyProfile } from '@/hooks/useTechnicianProfile';
 import {
   useMyAvailability,
   useAddAvailability,
@@ -29,6 +31,7 @@ const DAYS_OF_WEEK = [
 ];
 
 export default function TechnicianAvailabilityPage() {
+  const { data: profile, isLoading: loadingProfile } = useMyProfile();
   const { data: windows = [], isLoading, error, refetch } = useMyAvailability();
   const addMutation = useAddAvailability();
   const deleteMutation = useDeleteAvailability();
@@ -86,6 +89,23 @@ export default function TechnicianAvailabilityPage() {
           Set your working hours for each day of the week so customers can schedule appointments.
         </p>
       </div>
+
+      {/* Step 1 Profile Missing Banner */}
+      {!loadingProfile && !profile && (
+        <div className="bg-[#0f1716] border border-[#14b8a6]/40 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-[#5eead4]">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-[#f59e0b] shrink-0" />
+            <span>
+              <strong>Step 1 Required: Complete Profile Settings</strong> — Please set your hourly rate and location first under Profile Settings before adding working hours.
+            </span>
+          </div>
+          <Link href="/dashboard/technician/profile" className="shrink-0">
+            <NeonButton variant="secondary" size="sm">
+              Setup Profile First
+            </NeonButton>
+          </Link>
+        </div>
+      )}
 
       {/* Add Window Form Card */}
       <div className="bg-[#181512] border border-[#2d2722] p-6 rounded-2xl shadow-xl relative overflow-hidden space-y-4">
