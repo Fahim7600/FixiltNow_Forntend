@@ -1,20 +1,25 @@
 # Progress Log - FixItNow Frontend
 
-## Project Commit Counter: 44 commits total
+## Project Commit Counter: 51 commits total
+
+---
+
+## [2026-08-24] - Prompt 7: Customer Review System & Shared StarRating Component
+
+### Completed Tasks
+- **Task 1: Types & Hook**: Created `src/types/review.ts` and `src/hooks/useReviews.ts` (`useCreateReview` mutation with cache invalidation for bookings and technician profiles). *(Commit: `feat: add review types and creation hook`)*
+- **Task 2: Proxy Route Handler**: Created `src/app/api/reviews/route.ts` proxying `POST /api/reviews` to backend server. *(Commit: `feat: add review proxy Route Handler`)*
+- **Task 3: Reusable StarRating Component**: Built `src/components/review/StarRating.tsx` supporting interactive mode (hover preview + click selection) and read-only mode. *(Commit: `feat: add reusable StarRating component`)*
+- **Task 4: ReviewModal Component**: Built `src/components/review/ReviewModal.tsx` featuring star rating selection, optional comment (enforcing 1000-character max limit with counter), and friendly handling for duplicate reviews. *(Commit: `feat: add review submission modal`)*
+- **Task 5: Customer Dashboard Integration**: Wired "Leave Review" `NeonButton` into `src/app/dashboard/customer/page.tsx` for `COMPLETED` bookings, updating local component state to hide the button immediately upon submission. *(Commit: `feat: wire Leave Review action into customer dashboard`)*
+- **Task 6: Technician Profile Refactoring**: Updated `src/app/(public)/technicians/[id]/page.tsx` to use the shared `StarRating` component for review display consistency. *(Commit: `refactor: use shared StarRating for review display on technician profile`)*
 
 ---
 
 ## [2026-08-24] - Prompt 6: Real Stripe Payment Integration & Webhook Polling
 
 ### Completed Tasks
-- **Task 1: Install Stripe Packages**: Installed `@stripe/stripe-js` and `@stripe/react-stripe-js`. *(Commit: `chore: add Stripe.js and React Stripe.js packages`)*
-- **Task 2: Environment Configuration**: Configured `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` in `.env.local` and `.env.local.example`.
-- **Task 3: Stripe Client Singleton**: Built `src/lib/stripe-client.ts` with memoized `getStripe()` using `loadStripe`. *(Commit: `feat: add Stripe.js client singleton`)*
-- **Task 4: Payment Proxy Route Handler**: Created `src/app/api/payments/create/route.ts` proxying `POST /api/payments/create` to backend for `clientSecret`. *(Commit: `feat: add payment intent proxy Route Handler`)*
-- **Task 5: Real Payment Page**: Built `src/app/dashboard/customer/bookings/[id]/pay/page.tsx` replacing Prompt 5 stub. Features booking status guards (`REQUESTED` -> "not ready", `PAID` -> "already paid"), booking summary, and dark-themed Stripe `<Elements>`. *(Commit: `feat: build real Stripe payment page with themed PaymentElement`)*
-- **Task 6: CheckoutForm Component**: Built `src/components/payment/CheckoutForm.tsx` with `<PaymentElement />`, `stripe.confirmPayment()`, and inline/toast error reporting for immediate declines. *(Commit: `feat: add CheckoutForm with Stripe confirmPayment flow`)*
-- **Task 7: Success Page with Webhook Polling**: Built `src/app/payment/success/page.tsx` polling `GET /api/bookings/[id]` (`refetchInterval: 2000`) until status flips to `PAID` via Stripe webhook. *(Commit: `feat: add payment success page with booking status polling`)*
-- **Task 8: Cancel Page**: Built `src/app/payment/cancel/page.tsx` with cancellation notice, dashboard link, and retry link. *(Commit: `feat: add payment cancel page`)*
+- **Tasks 1-8**: Installed Stripe packages, configured publishable key, created Stripe client singleton, payment intent proxy Route Handler, real payment page with dark theme Elements, CheckoutForm, success page with status polling, and cancel page.
 
 ---
 
