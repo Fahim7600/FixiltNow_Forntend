@@ -1,49 +1,51 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import {
+  Wrench,
   Calendar,
   Clock,
-  DollarSign,
+  CheckCircle2,
   AlertTriangle,
   RotateCcw,
-  Wrench,
-  Check,
-  X,
-  Play,
-  CheckCheck,
+  UserCheck,
   User,
+  ArrowRight,
 } from 'lucide-react';
 import StatusBadge from '@/components/booking/StatusBadge';
 import NeonButton from '@/components/ui/NeonButton';
+import { useMyAvailability } from '@/hooks/useAvailability';
 import { useMyBookings, useUpdateBookingStatus } from '@/hooks/useBookings';
+import { useMyProfile } from '@/hooks/useTechnicianProfile';
+import { useMyServices } from '@/hooks/useTechnicianServices';
 import { formatCurrency } from '@/lib/format';
+import { Booking } from '@/types/booking';
 
 export default function TechnicianDashboardPage() {
-  const { data: bookings = [], isLoading, error, refetch } = useMyBookings();
+  const { data: bookings = [], isLoading: loadingBookings, error: bookingsError, refetch } = useMyBookings();
+  const { data: profile, isLoading: loadingProfile } = useMyProfile();
+  const { data: services = [] } = useMyServices();
+  const { data: availability = [] } = useMyAvailability();
+
   const updateStatusMutation = useUpdateBookingStatus();
 
   // Compute stat cards client-side
-  const totalBookings = bookings.length;
-  const pendingRequests = bookings.filter((b) => b.status === 'REQUESTED').length;
+  const incomingRequests = bookings.filter((b) => b.status === 'REQUESTED').length;
+  const activeJobs = bookings.filter((b) => ['ACCEPTED', 'PAID', 'IN_PROGRESS'].includes(b.status)).length;
+  const completedJobs = bookings.filter((b) => b.status === 'COMPLETED').length;
 
-  const totalEarnings = bookings.reduce((sum, b) => {
-    if (['PAID', 'IN_PROGRESS', 'COMPLETED'].includes(b.status)) {
-      const val = typeof b.priceAtBooking === 'number' ? b.priceAtBooking : Number(b.priceAtBooking);
-      return sum + (isNaN(val) ? 0 : val);
-    }
-    return sum;
-  }, 0);
+  const activeServicesCount = services.filter((s) => s.isActive).length;
+  const availabilitySlotCount = availability.length;
 
   const handleStatusChange = async (
-    id: string,
-    targetStatus: 'ACCEPTED' | 'DECLINED' | 'IN_PROGRESS' | 'COMPLETED',
-    successMessage: string
+    bookingId: string,
+    status: 'ACCEPTED' | 'DECLINED' | 'IN_PROGRESS' | 'COMPLETED'
   ) => {
     try {
-      await updateStatusMutation.mutateAsync({ id, status: targetStatus });
-      toast.success(successMessage);
+      await updateStatusMutation.mutateAsync({ id: bookingId, status });
+      toast.success(`Booking status updated to ${status}`);
     } catch (err: any) {
       toast.error(err.message || 'Failed to update booking status');
     }
@@ -54,11 +56,61 @@ export default function TechnicianDashboardPage() {
       {/* Header */}
       <div className="space-y-1 border-b border-[#2d2722] pb-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-white">
-          Technician Dashboard
+          Technician Workspace
         </h1>
         <p className="text-xs sm:text-sm text-[#a8a095]">
-          Manage incoming job requests, update service progress, and track your total earnings.
+          Manage job requests, active service listings, weekly availability, and customer appointments.
         </p>
+      </div>
+
+      {/* Quick Access & Setup Navigation Banner */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Link href="/dashboard/technician/profile" className="group">
+          <div className="bg-[#181512] border border-[#2d2722] p-5 rounded-2xl flex items-center justify-between hover:border-[#14b8a6]/40 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#0f1716] border border-[#14b8a6]/30 flex items-center justify-center text-[#5eead4]">
+                <User className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold font-heading text-white block">Profile Settings</span>
+                <span className="text-[11px] text-[#a8a095]">
+                  {loadingProfile ? 'Loading...' : profile ? 'Profile Active' : 'Setup Required'}
+                </span>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#a8a095] group-hover:text-[#5eead4] group-hover:translate-x-1 transition-all" />
+          </div>
+        </Link>
+
+        <Link href="/dashboard/technician/services" className="group">
+          <div className="bg-[#181512] border border-[#2d2722] p-5 rounded-2xl flex items-center justify-between hover:border-[#f59e0b]/40 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#221e1a] border border-[#f59e0b]/30 flex items-center justify-center text-[#fbbf24]">
+                <Wrench className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold font-heading text-white block">Service Listings</span>
+                <span className="text-[11px] text-[#a8a095]">{activeServicesCount} Active Services</span>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#a8a095] group-hover:text-[#fbbf24] group-hover:translate-x-1 transition-all" />
+          </div>
+        </Link>
+
+        <Link href="/dashboard/technician/availability" className="group">
+          <div className="bg-[#181512] border border-[#2d2722] p-5 rounded-2xl flex items-center justify-between hover:border-[#5eead4]/40 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#12100e] border border-[#2d2722] flex items-center justify-center text-[#5eead4]">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold font-heading text-white block">Availability</span>
+                <span className="text-[11px] text-[#a8a095]">{availabilitySlotCount} Slots Scheduled</span>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#a8a095] group-hover:text-[#5eead4] group-hover:translate-x-1 transition-all" />
+          </div>
+        </Link>
       </div>
 
       {/* Stat Cards Grid */}
@@ -69,63 +121,62 @@ export default function TechnicianDashboardPage() {
           </div>
           <div>
             <span className="text-xs text-[#a8a095] block uppercase font-heading font-semibold tracking-wider">
-              Total Bookings
+              Pending Requests
             </span>
-            <span className="text-2xl font-extrabold font-heading text-white">
-              {totalBookings}
+            <span className="text-2xl font-extrabold font-heading text-[#fbbf24]">
+              {incomingRequests}
             </span>
           </div>
         </div>
 
         <div className="bg-[#181512] border border-[#2d2722] p-5 rounded-2xl flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#221e1a] border border-[#f59e0b]/40 flex items-center justify-center text-[#f59e0b] shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-[#0f172a] border border-[#0284c7]/30 flex items-center justify-center text-[#38bdf8] shrink-0">
             <Clock className="w-6 h-6" />
           </div>
           <div>
             <span className="text-xs text-[#a8a095] block uppercase font-heading font-semibold tracking-wider">
-              Pending Requests
+              Active Jobs
             </span>
-            <span className="text-2xl font-extrabold font-heading text-[#fbbf24]">
-              {pendingRequests}
+            <span className="text-2xl font-extrabold font-heading text-[#38bdf8]">
+              {activeJobs}
             </span>
           </div>
         </div>
 
         <div className="bg-[#181512] border border-[#2d2722] p-5 rounded-2xl flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-[#0f1716] border border-[#14b8a6]/30 flex items-center justify-center text-[#5eead4] shrink-0">
-            <DollarSign className="w-6 h-6" />
+            <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
             <span className="text-xs text-[#a8a095] block uppercase font-heading font-semibold tracking-wider">
-              Total Earnings
+              Completed Jobs
             </span>
             <span className="text-2xl font-extrabold font-heading text-[#5eead4]">
-              {formatCurrency(totalEarnings)}
+              {completedJobs}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Bookings List / Table */}
+      {/* Bookings Management Table */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold font-heading text-white flex items-center gap-2">
-            <Wrench className="w-4 h-4 text-[#5eead4]" /> Incoming & Active Jobs
+            <Wrench className="w-4 h-4 text-[#f59e0b]" /> Incoming Job Requests & Assigned Jobs
           </h2>
         </div>
 
-        {isLoading ? (
+        {loadingBookings ? (
           <div className="bg-[#181512] border border-[#2d2722] rounded-2xl p-6 space-y-4 animate-pulse">
             <div className="h-12 bg-[#221e1a] rounded-xl" />
             <div className="h-12 bg-[#221e1a] rounded-xl" />
-            <div className="h-12 bg-[#221e1a] rounded-xl" />
           </div>
-        ) : error ? (
+        ) : bookingsError ? (
           <div className="bg-[#181512] border border-red-900/40 p-8 rounded-2xl text-center space-y-3">
             <AlertTriangle className="w-8 h-8 text-red-400 mx-auto" />
-            <p className="text-sm font-semibold text-white">Unable to load technician bookings</p>
+            <p className="text-sm font-semibold text-white">Unable to load job requests</p>
             <p className="text-xs text-[#a8a095]">
-              {error instanceof Error ? error.message : 'Error fetching bookings from server.'}
+              {bookingsError instanceof Error ? bookingsError.message : 'Error fetching bookings.'}
             </p>
             <NeonButton variant="primary" size="sm" onClick={() => refetch()} icon={<RotateCcw className="w-3.5 h-3.5" />}>
               Try Again
@@ -133,15 +184,15 @@ export default function TechnicianDashboardPage() {
           </div>
         ) : bookings.length === 0 ? (
           <div className="bg-[#181512] border border-[#2d2722] p-8 sm:p-12 rounded-2xl text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-[#221e1a] border border-[#14b8a6]/30 flex items-center justify-center text-[#5eead4] mx-auto">
-              <Wrench className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-full bg-[#221e1a] border border-[#f59e0b]/30 flex items-center justify-center text-[#fbbf24] mx-auto">
+              <Calendar className="w-6 h-6" />
             </div>
             <div className="space-y-1">
               <h3 className="text-base font-bold font-heading text-white">
-                No job requests yet
+                No job requests assigned yet
               </h3>
               <p className="text-xs text-[#a8a095]">
-                When customers book your listed services, requests will appear here for your review.
+                When customers book your services, incoming jobs will appear here for your review.
               </p>
             </div>
           </div>
@@ -151,17 +202,20 @@ export default function TechnicianDashboardPage() {
               <table className="w-full text-left text-xs text-[#d4ceb8]">
                 <thead className="bg-[#12100e] text-[#a8a095] uppercase tracking-wider font-heading font-semibold border-b border-[#2d2722]">
                   <tr>
-                    <th className="py-3.5 px-4">Customer</th>
                     <th className="py-3.5 px-4">Service</th>
+                    <th className="py-3.5 px-4">Customer</th>
                     <th className="py-3.5 px-4">Scheduled Date</th>
                     <th className="py-3.5 px-4">Status</th>
-                    <th className="py-3.5 px-4">Payout</th>
+                    <th className="py-3.5 px-4">Price</th>
                     <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#2d2722]/60">
                   {bookings.map((booking) => {
-                    const customerName = booking.customer?.name || 'Customer';
+                    const custName =
+                      booking.customer?.name ||
+                      'Marketplace Customer';
+
                     const formattedDate = new Date(booking.scheduledDate).toLocaleString('en-US', {
                       dateStyle: 'medium',
                       timeStyle: 'short',
@@ -170,13 +224,13 @@ export default function TechnicianDashboardPage() {
                     return (
                       <tr key={booking.id} className="hover:bg-[#221e1a]/50 transition-colors">
                         <td className="py-4 px-4 font-semibold text-white font-heading">
-                          <span className="flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5 text-[#f59e0b]" />
-                            {customerName}
-                          </span>
+                          {booking.service?.title || 'Service Booking'}
                         </td>
                         <td className="py-4 px-4 text-[#f5f2eb]">
-                          {booking.service?.title || 'Service Job'}
+                          <span className="flex items-center gap-1.5">
+                            <UserCheck className="w-3.5 h-3.5 text-[#5eead4]" />
+                            {custName}
+                          </span>
                         </td>
                         <td className="py-4 px-4 text-[#a8a095] whitespace-nowrap">
                           {formattedDate}
@@ -184,7 +238,7 @@ export default function TechnicianDashboardPage() {
                         <td className="py-4 px-4">
                           <StatusBadge status={booking.status} />
                         </td>
-                        <td className="py-4 px-4 font-bold text-[#5eead4] font-heading">
+                        <td className="py-4 px-4 font-bold text-[#fbbf24] font-heading">
                           {formatCurrency(booking.priceAtBooking)}
                         </td>
                         <td className="py-4 px-4 text-right whitespace-nowrap">
@@ -193,37 +247,28 @@ export default function TechnicianDashboardPage() {
                               <NeonButton
                                 variant="primary"
                                 size="sm"
-                                onClick={() => handleStatusChange(booking.id, 'ACCEPTED', 'Booking accepted')}
+                                onClick={() => handleStatusChange(booking.id, 'ACCEPTED')}
                                 loading={updateStatusMutation.isPending}
-                                icon={<Check className="w-3 h-3" />}
                               >
                                 Accept
                               </NeonButton>
                               <NeonButton
                                 variant="danger"
                                 size="sm"
-                                onClick={() => handleStatusChange(booking.id, 'DECLINED', 'Booking declined')}
+                                onClick={() => handleStatusChange(booking.id, 'DECLINED')}
                                 loading={updateStatusMutation.isPending}
-                                icon={<X className="w-3 h-3" />}
                               >
                                 Decline
                               </NeonButton>
                             </div>
                           )}
 
-                          {booking.status === 'ACCEPTED' && (
-                            <span className="text-[11px] text-[#38bdf8] font-medium italic">
-                              Waiting for customer payment
-                            </span>
-                          )}
-
                           {booking.status === 'PAID' && (
                             <NeonButton
-                              variant="primary"
+                              variant="secondary"
                               size="sm"
-                              onClick={() => handleStatusChange(booking.id, 'IN_PROGRESS', 'Job marked in progress')}
+                              onClick={() => handleStatusChange(booking.id, 'IN_PROGRESS')}
                               loading={updateStatusMutation.isPending}
-                              icon={<Play className="w-3 h-3" />}
                             >
                               Start Job
                             </NeonButton>
@@ -233,15 +278,14 @@ export default function TechnicianDashboardPage() {
                             <NeonButton
                               variant="primary"
                               size="sm"
-                              onClick={() => handleStatusChange(booking.id, 'COMPLETED', 'Job marked completed')}
+                              onClick={() => handleStatusChange(booking.id, 'COMPLETED')}
                               loading={updateStatusMutation.isPending}
-                              icon={<CheckCheck className="w-3 h-3" />}
                             >
                               Mark Completed
                             </NeonButton>
                           )}
 
-                          {['COMPLETED', 'DECLINED', 'CANCELLED'].includes(booking.status) && (
+                          {!['REQUESTED', 'PAID', 'IN_PROGRESS'].includes(booking.status) && (
                             <span className="text-[11px] text-[#6b6359] italic">—</span>
                           )}
                         </td>
