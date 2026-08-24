@@ -20,7 +20,7 @@ export function useMyBookings() {
   });
 }
 
-export function useBooking(id: string) {
+export function useBooking(id: string, options?: { refetchInterval?: number | false }) {
   return useQuery({
     queryKey: ['booking', id],
     queryFn: async (): Promise<Booking> => {
@@ -32,7 +32,8 @@ export function useBooking(id: string) {
       return json.data;
     },
     enabled: !!id,
-    staleTime: 1000 * 30,
+    staleTime: options?.refetchInterval ? 0 : 1000 * 30,
+    refetchInterval: options?.refetchInterval,
   });
 }
 
