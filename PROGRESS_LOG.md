@@ -1,28 +1,27 @@
 # Progress Log - FixItNow Frontend
 
-## Project Commit Counter: 36 commits total
+## Project Commit Counter: 44 commits total
+
+---
+
+## [2026-08-24] - Prompt 6: Real Stripe Payment Integration & Webhook Polling
+
+### Completed Tasks
+- **Task 1: Install Stripe Packages**: Installed `@stripe/stripe-js` and `@stripe/react-stripe-js`. *(Commit: `chore: add Stripe.js and React Stripe.js packages`)*
+- **Task 2: Environment Configuration**: Configured `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` in `.env.local` and `.env.local.example`.
+- **Task 3: Stripe Client Singleton**: Built `src/lib/stripe-client.ts` with memoized `getStripe()` using `loadStripe`. *(Commit: `feat: add Stripe.js client singleton`)*
+- **Task 4: Payment Proxy Route Handler**: Created `src/app/api/payments/create/route.ts` proxying `POST /api/payments/create` to backend for `clientSecret`. *(Commit: `feat: add payment intent proxy Route Handler`)*
+- **Task 5: Real Payment Page**: Built `src/app/dashboard/customer/bookings/[id]/pay/page.tsx` replacing Prompt 5 stub. Features booking status guards (`REQUESTED` -> "not ready", `PAID` -> "already paid"), booking summary, and dark-themed Stripe `<Elements>`. *(Commit: `feat: build real Stripe payment page with themed PaymentElement`)*
+- **Task 6: CheckoutForm Component**: Built `src/components/payment/CheckoutForm.tsx` with `<PaymentElement />`, `stripe.confirmPayment()`, and inline/toast error reporting for immediate declines. *(Commit: `feat: add CheckoutForm with Stripe confirmPayment flow`)*
+- **Task 7: Success Page with Webhook Polling**: Built `src/app/payment/success/page.tsx` polling `GET /api/bookings/[id]` (`refetchInterval: 2000`) until status flips to `PAID` via Stripe webhook. *(Commit: `feat: add payment success page with booking status polling`)*
+- **Task 8: Cancel Page**: Built `src/app/payment/cancel/page.tsx` with cancellation notice, dashboard link, and retry link. *(Commit: `feat: add payment cancel page`)*
 
 ---
 
 ## [2026-08-24] - Prompt 5: Booking Creation, Status Badges & Role Dashboards
 
 ### Completed Tasks
-- **Task 1: Booking Proxy Route Handlers**: Created proxy Route Handlers under `src/app/api/bookings/`:
-  - `POST /api/bookings`: Forwards serviceId, scheduledDate, and notes to backend `POST /api/bookings` (auth: CUSTOMER only).
-  - `GET /api/bookings`: Forwards caller's booking list query to backend `GET /api/bookings`.
-  - `GET /api/bookings/[id]`: Forwards single booking detail query to backend `GET /api/bookings/:id`.
-  - `PATCH /api/technician-bookings/[id]`: Forwards status updates to backend `PATCH /api/technician/bookings/:id` (auth: TECHNICIAN only).
-  *(Commit: `feat: add booking proxy Route Handlers`)*
-- **Task 2: Types & React Query Hooks**: Created `src/types/booking.ts` and `src/hooks/useBookings.ts` containing `useMyBookings()`, `useBooking(id)`, `useCreateBooking()`, and `useUpdateBookingStatus()` with automatic query cache invalidation. *(Commit: `feat: add booking types and React Query hooks`)*
-- **Task 3: Status Badge Component**: Created `src/components/booking/StatusBadge.tsx` mapping `REQUESTED`, `ACCEPTED`, `DECLINED`, `PAID`, `IN_PROGRESS`, `COMPLETED`, and `CANCELLED` statuses to design system token colors. *(Commit: `feat: add booking StatusBadge component`)*
-- **Task 4: Booking Creation Modal**: Created `src/components/booking/BookingModal.tsx` with native future datetime validation (`<input type="datetime-local">`) and notes textarea. Wired into `src/app/(public)/technicians/[id]/page.tsx` for CUSTOMER role bookings. *(Commit: `feat: add booking creation modal with future-date validation`)*
-- **Task 5: Customer Bookings Dashboard**: Replaced placeholder in `src/app/dashboard/customer/page.tsx` with interactive bookings table, `StatusBadge`, formatted pricing, and "Pay Now" action linking to stub payment page. *(Commit: `feat: build customer bookings dashboard`)*
-- **Task 6: Technician Bookings Dashboard**: Replaced placeholder in `src/app/dashboard/technician/page.tsx` with incoming jobs table and status transition actions (`Accept`, `Decline`, `Start Job`, `Mark Completed`). Surfaces backend HTTP 400 error messages directly via toasts. *(Commit: `feat: build technician bookings dashboard with status actions`)*
-- **Task 7: Dashboard Overview Stats**: Added client-side computed overview stat cards:
-  - Customer: Total Bookings, Upcoming Jobs, Completed Jobs.
-  - Technician: Total Bookings, Pending Requests, Total Earnings.
-  *(Commit: `feat: add dashboard overview stat cards`)*
-- **Task 8: Stub Payment Page**: Created `src/app/dashboard/customer/bookings/[id]/pay/page.tsx` displaying booking summary and a disabled "Payment integration coming soon" button placeholder. *(Commit: `chore: add stub payment page placeholder`)*
+- **Tasks 1-8**: Created booking Route Handlers (`/api/bookings/*`, `/api/technician-bookings/*`), booking types & React Query hooks (`useMyBookings`, `useBooking`, `useCreateBooking`, `useUpdateBookingStatus`), `StatusBadge` component, `BookingModal`, Customer & Technician dashboards with overview stats, and stub payment page.
 
 ---
 
