@@ -131,7 +131,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51TqyBbEcrg2A3pJe0pBtMF0EH4cpqABi1rcy
 
 ## 🌐 Live Demo & Test Credentials
 
-- **Live Frontend URL:** `https://fixitnow-frontend.vercel.app` *(Placeholder)*
+- **Live Frontend URL:** [https://fixit-now-sand.vercel.app](https://fixit-now-sand.vercel.app)
 - **Admin Test Credentials (Seeded Account):**
   - **Email:** `admin@fixitnow.com`
   - **Password:** `Admin@12345`
