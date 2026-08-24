@@ -44,11 +44,42 @@ export default function Navbar() {
     }
   };
 
-  const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/services', label: 'Services' },
-    ...(isAuthenticated ? [{ href: getDashboardPath(), label: getDashboardLabel() }] : []),
-  ];
+  const getNavLinks = () => {
+    const base = [
+      { href: '/', label: 'Home' },
+      { href: '/services', label: 'Services' },
+    ];
+
+    if (!isAuthenticated || !user) return base;
+
+    if (user.role === 'TECHNICIAN') {
+      return [
+        ...base,
+        { href: '/dashboard/technician', label: 'Jobs' },
+        { href: '/dashboard/technician/profile', label: 'Profile' },
+        { href: '/dashboard/technician/services', label: 'My Services' },
+        { href: '/dashboard/technician/availability', label: 'Availability' },
+      ];
+    }
+
+    if (user.role === 'ADMIN') {
+      return [
+        ...base,
+        { href: '/dashboard/admin', label: 'Overview' },
+        { href: '/dashboard/admin/users', label: 'Users' },
+        { href: '/dashboard/admin/categories', label: 'Categories' },
+        { href: '/dashboard/admin/bookings', label: 'Bookings' },
+        { href: '/dashboard/admin/payments', label: 'Payments' },
+      ];
+    }
+
+    return [
+      ...base,
+      { href: '/dashboard/customer', label: 'My Bookings' },
+    ];
+  };
+
+  const navLinks = getNavLinks();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#12100e]/85 backdrop-blur-md border-b border-[#2d2722]/80 transition-all duration-300">
