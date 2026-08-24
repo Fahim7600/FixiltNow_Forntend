@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk, Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
+import { Providers } from '@/lib/providers';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import './globals.css';
@@ -30,10 +31,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} scroll-smooth dark`}>
       <body className="min-h-screen flex flex-col bg-[#12100e] text-[#f5f2eb] antialiased selection:bg-[#f59e0b]/30 selection:text-[#fbbf24]">
-        <Toaster position="top-right" theme="dark" richColors />
-        <Navbar isLoggedIn={false} />
-        <main className="flex-1 w-full">{children}</main>
-        <Footer />
+        <Providers>
+          <Toaster position="top-right" theme="dark" richColors />
+          <Navbar />
+          <main className="flex-1 w-full">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
