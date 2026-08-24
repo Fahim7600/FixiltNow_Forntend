@@ -4,6 +4,8 @@ export * from './auth';
 export * from './catalog';
 export * from './booking';
 export * from './review';
+export * from './technician';
+export * from './admin';
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
