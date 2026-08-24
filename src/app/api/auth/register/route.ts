@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { backendPost, BackendError } from '@/lib/backend-client';
-import { setSessionCookie } from '@/lib/auth-cookie';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, email, password, phone, role } = body;
 
-    // 1. Call backend register
+    // Call backend register endpoint (Prisma user creation)
     const regResult: any = await backendPost('/api/auth/register', {
       name,
       email,
@@ -16,31 +15,12 @@ export async function POST(request: Request) {
       role: role || 'CUSTOMER',
     });
 
-    let user = regResult?.data || regResult?.user;
-    let autoLoggedIn = false;
-
-    // 2. Auto-login after registration to retrieve JWT token and set session cookie
-    try {
-      const loginResult: any = await backendPost('/api/auth/login', { email, password });
-      const token = loginResult?.data?.token || loginResult?.token;
-      const loggedInUser = loginResult?.data?.user || loginResult?.user;
-
-      if (token) {
-        await setSessionCookie(token);
-        autoLoggedIn = true;
-      }
-      if (loggedInUser) {
-        user = loggedInUser;
-      }
-    } catch {
-      // Auto-login optional fallback
-    }
+    const user = regResult?.data || regResult?.user;
 
     return NextResponse.json({
       success: true,
       message: 'Registration successful',
       user,
-      autoLoggedIn,
     });
   } catch (error: any) {
     if (error instanceof BackendError) {

@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Mail, Lock, AlertCircle, LogIn } from 'lucide-react';
+import { Mail, Lock, AlertCircle, LogIn, CheckCircle2 } from 'lucide-react';
 import NeonButton from '@/components/ui/NeonButton';
 import Logo from '@/components/layout/Logo';
 import { useAuth } from '@/lib/auth-context';
@@ -23,20 +23,29 @@ function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get('redirect');
+  const registeredParam = searchParams.get('registered');
+  const emailParam = searchParams.get('email');
   const { refetch } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      email: emailParam || '',
       password: '',
     },
   });
+
+  React.useEffect(() => {
+    if (emailParam) {
+      setValue('email', emailParam);
+    }
+  }, [emailParam, setValue]);
 
   const onSubmit = async (data: LoginFormData) => {
     setServerError(null);
@@ -83,6 +92,13 @@ function LoginFormContent() {
   return (
     <div className="bg-[#181512] border border-[#2d2722] p-6 sm:p-8 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)] space-y-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#b45309] via-[#f59e0b] to-[#fbbf24]" />
+
+      {registeredParam && (
+        <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-teal-950/50 border border-teal-800/60 text-[#5eead4] text-sm">
+          <CheckCircle2 className="w-4 h-4 text-[#14b8a6] shrink-0 mt-0.5" />
+          <span>Account created successfully! Enter your password below to sign in.</span>
+        </div>
+      )}
 
       {serverError && (
         <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-950/40 border border-red-800/50 text-red-300 text-sm">

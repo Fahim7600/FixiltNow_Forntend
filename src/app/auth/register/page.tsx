@@ -82,21 +82,8 @@ export default function RegisterPage() {
         return;
       }
 
-      if (result.autoLoggedIn) {
-        toast.success('Registration successful! Welcome to FixItNow.');
-        await refetch();
-        const userRole = (result.user?.role || data.role).toUpperCase();
-        if (userRole === 'TECHNICIAN') {
-          router.push('/dashboard/technician');
-        } else if (userRole === 'ADMIN') {
-          router.push('/dashboard/admin');
-        } else {
-          router.push('/dashboard/customer');
-        }
-      } else {
-        toast.success('Account created successfully! Please sign in with your credentials.');
-        router.push('/auth/login');
-      }
+      toast.success('Account created successfully! Please sign in to access your dashboard.');
+      router.push(`/auth/login?registered=true&email=${encodeURIComponent(data.email)}`);
     } catch {
       toast.error('Network error. Please try again.');
     }
