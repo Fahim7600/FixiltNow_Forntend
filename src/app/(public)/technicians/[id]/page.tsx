@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { use, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -14,9 +14,11 @@ import {
   Zap,
 } from 'lucide-react';
 import NeonButton from '@/components/ui/NeonButton';
+import BookingModal from '@/components/booking/BookingModal';
 import { useTechnician } from '@/hooks/useCatalog';
 import { useAuth } from '@/lib/auth-context';
 import { formatCurrency, formatRating } from '@/lib/format';
+import { ServiceItem } from '@/types/catalog';
 import TechnicianLoading from './loading';
 
 export default function TechnicianProfilePage({
@@ -26,7 +28,10 @@ export default function TechnicianProfilePage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+
+  const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const { data: tech, isLoading, error } = useTechnician(id);
 
@@ -45,14 +50,20 @@ export default function TechnicianProfilePage({
   const services = Array.isArray(tech.services) ? tech.services.filter((s) => s.isActive) : [];
   const reviews = Array.isArray(tech.reviews) ? tech.reviews : [];
 
-  const handleBookService = (serviceTitle: string) => {
+  const handleBookClick = (service: ServiceItem) => {
     if (!isAuthenticated) {
       toast.info('Please sign in to book a service');
       router.push(`/auth/login?redirect=/technicians/${id}`);
       return;
     }
 
-    toast.success(`Selected "${serviceTitle}". Booking workflow opens in the next prompt!`);
+    if (user?.role !== 'CUSTOMER') {
+      toast.error('Only customer accounts can book services.');
+      return;
+    }
+
+    setSelectedService(service);
+    setModalOpen(true);
   };
 
   return (
@@ -188,7 +199,7 @@ export default function TechnicianProfilePage({
                   <NeonButton
                     variant="primary"
                     size="sm"
-                    onClick={() => handleBookService(service.title)}
+                    onClick={() => handleBookClick(service)}
                     icon={<Zap className="w-3.5 h-3.5" />}
                     className="w-full justify-center"
                   >
@@ -246,6 +257,18 @@ export default function TechnicianProfilePage({
           )}
         </div>
       </div>
+
+      {/* Booking Modal */}
+      {selectedService && (
+        <BookingModal
+          service={selectedService}
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedService(null);
+          }}
+        />
+      )}
     </div>
   );
 }
